@@ -28,3 +28,11 @@ logs/
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Python backend dependencies
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
