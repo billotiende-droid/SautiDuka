@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date as date_type
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, JSON
@@ -18,7 +18,7 @@ class DailySession(SQLModel, table=True):
     __tablename__ = "daily_sessions"
     id: Optional[int] = Field(default=None, primary_key=True)
     business_id: int = Field(foreign_key="businesses.id")
-    date: date = Field(default_factory=date.today)
+    date: date_type = Field(default_factory=date_type.today)
     status: str = Field(default="OPEN")
     opening_cash: float = Field(default=0.0)
     opening_mobile_money: float = Field(default=0.0)
@@ -55,4 +55,16 @@ class Debt(SQLModel, table=True):
     status: str = Field(default="PENDING")  # 'PENDING', 'PAID'
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    session: Optional[DailySession] = Relationship(back_populates="session")
+    session: Optional[DailySession] = Relationship(back_populates="debts")
+
+class SyncQueue(SQLModel, table=True):
+    __tablename__ = "sync_queue"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    business_id: int = Field(foreign_key="businesses.id")
+    client_id: str  # Device/client identifier
+    operation: str  # 'CREATE', 'UPDATE', 'DELETE'
+    entity_type: str  # 'transaction', 'debt', 'session'
+    payload: dict = Field(sa_column=Column(JSON, nullable=False))
+    status: str = Field(default="PENDING")  # 'PENDING', 'APPLIED', 'FAILED'
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    applied_at: Optional[datetime] = Field(default=None)
